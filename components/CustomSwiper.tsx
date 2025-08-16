@@ -3,7 +3,7 @@ import { View, Pressable, LayoutChangeEvent, Dimensions } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
 
 interface CustomSwiperProps {
-  children: React.ReactNode[];
+  children: React.ReactNode | React.ReactNode[];
   slidesPerView?: number;
   delay?: number;
   showDots?: boolean;
@@ -32,7 +32,10 @@ const CustomSwiper: React.FC<CustomSwiperProps> = ({
   const [containerW, setContainerW] = useState(fallbackWidth);
   const carouselRef = useRef<any>(null);
 
-  const data = useMemo(() => children, [children]);
+  const data = useMemo(() => {
+    // Ensure children is always an array
+    return Array.isArray(children) ? children : [children];
+  }, [children]);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const w = e.nativeEvent.layout.width;
@@ -54,14 +57,13 @@ const CustomSwiper: React.FC<CustomSwiperProps> = ({
       <Carousel
         ref={carouselRef}
         loop
-        width={containerW}            // <-- use measured width
+        width={containerW}
         height={height}
         data={data}
         renderItem={renderItem}
         autoPlay={autoScroll}
         autoPlayInterval={delay}
         scrollAnimationDuration={1000}
-              // avoid parallax bleed
         onProgressChange={(_, abs) => {
           const idx = Math.round(abs);
           if (idx !== currentIndex) setCurrentIndex(idx);
